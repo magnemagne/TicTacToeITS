@@ -3,49 +3,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const playerShow = document.getElementById("playerShow");
 
-  const player1 = document.getElementById("player1");
-  const player2 = document.getElementById("player2");
+  const player1button = document.getElementById("player1");
+  const player2button = document.getElementById("player2");
   const reset = document.getElementById("reset");
   const winScreen = document.getElementById("WinScreen");
 
-  const row1 = document.querySelectorAll('.row1');
-  const row2 = document.querySelectorAll('.row2');
-  const row3 = document.querySelectorAll('.row3');
-  const column1 = document.querySelectorAll('.column1');
-  const column2 = document.querySelectorAll('.column2');
-  const column3 = document.querySelectorAll('.column3');
-  const diag = document.querySelectorAll('.diag');
-
   let board = [[0,0,0],[0,0,0],[0,0,0]] ;
 
-  let currentPlayer = true;
+  function Player(color, backgroundcolor, identification, sign){
+    this.color = color;
+    this.backgroundcolor = backgroundcolor;
+    this.identification = identification;
+    this.sign = sign;
+  }
+
+  var player1 = new Player("blue", "rgb(154, 173, 255)", "player1", "o.svg");
+  var player2 = new Player("red", "rgb(255, 173, 148) ", "player2", "x.svg");
+  // var player3 = new Player("green", "rgb(255, 173, 148) ", "player2", "x.svg");
+  var players = [player1, player2];
+
+  let count = 0;
+  // let currentPlayer = true;
   //currentPlayer is what determines which player is which, true is player1, while false is player2
+
+  var currentPlayer = players[Math.floor(Math.random() * players.length)];
 
   Array.from(buttons).forEach((button) => {
     button.addEventListener("click", () => {
       if (button.getAttribute("used") == "false"){
-        button.setAttribute("used", "true")
-        if (currentPlayer){
-          button.style.backgroundColor = "red";
-          button.setAttribute("playerOnSquare","true");
-          player2play();
-          button.children[0].setAttribute("src","x.svg")
-        } else {
-          button.style.backgroundColor = "blue";
-          button.setAttribute("playerOnSquare","false");
-          player1play();
-          button.children[0].setAttribute("src","o.svg")
-        }
+        button.setAttribute("used", "true");
+        button.style.backgroundColor = currentPlayer.color;
+        button.setAttribute("playerOnSquare",currentPlayer.identification);
+        playerPlay(currentPlayer);
+        button.children[0].setAttribute("src", currentPlayer.sign)
+
+        var coord1 = String(button.id).charAt(0);
+        var coord2 = String(button.id).charAt(1);
+        board[coord1][coord2] = currentPlayer.identification;
+
+        console.log(board);
+   
+        checkVictory(currentPlayer); 
+        nextPlayer();   
       }
-      checkVictory(button.getAttribute("playerOnSquare"));
+      // var coord1 = String(button.id).charAt(0);
+      // var coord2 = String(button.id).charAt(1);
+      // alert(coord1 + coord2);
     });
   })
 
+  function nextPlayer() {
+    currentPlayer = players[players.length - (players.indexOf(currentPlayer)) - 1];
+  }
+
   reset.addEventListener("click", resetFunction);
 
-  player1.addEventListener("click", player1play);
+  player1button.addEventListener("click", nextPlayer());
 
-  player2.addEventListener("click", player2play);
+  player2button.addEventListener("click", nextPlayer());
 
   function resetFunction(){
     Array.from(buttons).forEach((button) => {
@@ -58,113 +73,96 @@ document.addEventListener("DOMContentLoaded", () => {
     winScreen.innerText = "";
   }
 
-  function player2play(){
-    currentPlayer=false;
-    playerShow.innerText="Player 2";
+  function playerPlay(player){
+    playerShow.innerText=player.identification;
   }
 
-  function player1play(){
-    currentPlayer=true;
-    playerShow.innerText="Player 1";
-  }
+  function checkVictory(player){
+    //check each row vertically and horizontally
+    for (let x = 0; x < 3; x++){
+      let countRow = 0;
+      for (let y = 0; y < 3; y++){
+        if(board[x][y] == player.identification){
+          countRow ++;
+        }
+        if (countRow > 2){
+          gameWon(player)
+        }
+      }
+    }
+    for (let y = 0; y < 3; y++){
+      let countRow = 0;
+      for (let x = 0; x < 3; x++){
+        if(board[x][y] == player.identification){
+          countRow ++;
+        }
+        console.log(board[x][y])
+        if (countRow > 2){
+          gameWon(player)
+        }
+      }
+    }
+    //check diagonally
+    if(board[1][1] == player.identification && board[0][0] == player.identification && board[2][2] == player.identification){
+      gameWon(player);
+    }
+    if(board[1][1] == player.identification && board[0][2] == player.identification && board[2][0] == player.identification){
+      gameWon(player);
+    }
 
-  function checkVictory(currentPlayer){
-    let counterRow1 = 0;
-    let counterRow2 = 0;
-    let counterRow3 = 0;
-    let counterColumn1 = 0;
-    let counterColumn2 = 0;
-    let counterColumn3 = 0;
-    let diagCounter = 0;
-    //row logic
-    Array.from(row1).forEach((button) => {
-      if (button.getAttribute("playerOnSquare") == currentPlayer ){
-        counterRow1 ++;
-      }
-      if (counterRow1 == 3) {
-        gameWon(currentPlayer);
-      }
-    });
-    Array.from(row2).forEach((button) => {
-      if (button.getAttribute("playerOnSquare") == currentPlayer ){
-        counterRow2 ++;
-      }
-      if (counterRow2 == 3) {
-        gameWon(currentPlayer);
-      }
-    });
-    Array.from(row3).forEach((button) => {
-      if (button.getAttribute("playerOnSquare") == currentPlayer ){
-        counterRow3 ++;
-      }
-      if (counterRow3 == 3) {
-        gameWon(currentPlayer);
-      }
-    });
+    //check around corners for impossible conditions where the other player cant win
+    if(board[0][0] == player.identification && board[1][0] == player.identification && board[0][1] == player.identification 
+      && board[0][2] == 0 && board[2][0] == 0
+    ){
+      gameWon(player);
+    }
+    if(board[0][2] == player.identification && board[0][1] == player.identification && board[1][2] == player.identification
+      && board[0][0] == 0 && board[2][2] == 0
+    ){
+      gameWon(player);
+    }
+    if(board[2][0] == player.identification && board[1][0] == player.identification && board[2][1] == player.identification
+      && board[0][0] == 0 && board[2][2] == 0
+    ){
+      gameWon(player);
+    }
+    if(board[2][2] == player.identification && board[2][1] == player.identification && board[1][2] == player.identification
+      && board[0][2] == 0 && board[2][0] == 0
+    ){
+      gameWon(player);
+    }
 
-    //column logic
-    Array.from(column1).forEach((button) => {
-      if (button.getAttribute("playerOnSquare") == currentPlayer ){
-        counterColumn1 ++;
-      }
-      if (counterColumn1 == 3) {
-        gameWon(currentPlayer);
-      }
-    });
-    Array.from(column2).forEach((button) => {
-      if (button.getAttribute("playerOnSquare") == currentPlayer ){
-        counterColumn2 ++;
-      }
-      if (counterColumn2 == 3) {
-        gameWon(currentPlayer);
-      }
-    });
-    Array.from(column3).forEach((button) => {
-      if (button.getAttribute("playerOnSquare") == currentPlayer ){
-        counterColumn3 ++;
-      }
-      if (counterColumn3 == 3) {
-        gameWon(currentPlayer);
-      }
-    });
+    //check the middle section too
+    if(board[1][1] == player.identification && board[0][1] == player.identification && board[1][0] == player.identification
+      && board[2][1] == 0 && board[1][2] == 0
+    ){
+      gameWon(player);
+    }
 
-    //diagonal logic
-    Array.from(diag).forEach((button) => {
-      if (button.getAttribute("playerOnSquare") == currentPlayer ){
-        diagCounter ++;
-      }
-      if (diagCounter == 3) {
-        gameWon(currentPlayer);
-      }
-    });
+    if(board[1][1] == player.identification && board[0][1] == player.identification && board[1][2] == player.identification
+      && board[2][1] == 0 && board[1][0] == 0
+    ){
+      gameWon(player);
+    }
 
-    //special logic
-    // if (counterColumn1 == 2 && counterRow1 == 2 ){
-    //   gameWon(currentPlayer);
-    // }
-    // if (counterColumn3 == 2 && counterRow3 == 2 ){
-    //   gameWon(currentPlayer);
-    // }
-    // if (counterColumn3 == 2 && counterRow1 == 2){
-    //   gameWon(currentPlayer);
-    // }
-    // if (counterColumn1 == 2 && counterRow3 == 2){
-    //   gameWon(currentPlayer);
-    // }
+    if(board[1][1] == player.identification && board[2][1] == player.identification && board[1][2] == player.identification
+      && board[0][1] == 0 && board[1][0] == 0
+    ){
+      gameWon(player);
+    }
+
+    if(board[1][1] == player.identification && board[2][1] == player.identification && board[1][0] == player.identification
+      && board[0][1] == 0 && board[1][2] == 0
+    ){
+      gameWon(player);
+    }
 
   }
 
   function gameWon(player){
-    if (player == "false") {
-      console.log("player 2 won");
-      winScreen.innerText = "Player 2 won !";
-      document.body.style.backgroundColor = "rgb(187, 182, 242)"; //blue
-    }
-    if (player == "true") {
-      console.log("player 1 won");
-      winScreen.innerText = "Player 1 won !";
-      document.body.style.backgroundColor = "rgb(242, 182, 191)"; //red
-    }
+    console.log(player.identification + " won");
+    winScreen.innerText = player.identification + " won!";
+    document.body.style.backgroundColor = player.backgroundcolor;    
     Array.from(buttons).forEach((button) => {
       button.setAttribute("used","true");
     });
