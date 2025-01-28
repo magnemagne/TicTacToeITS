@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Go nuts</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+
+
+    <div class="container">
+      <div id="counter">
+        <p id="WinScreen"></p>
+        <p style="display:inline">Current player</p>
+        <p id="playerShow" style="display:inline"><p>
+          <div class="settingContainer">
+            <button id="player1" class="buttonSetting" >Player 1</button>
+            <button id="player2" class="buttonSetting" >Player 2</button>
+            <button id="reset" class="buttonSetting" >Reset</button>
+          </div>
+      </div>
+      <div class="identitiesContainer">
+        <div class="identityContainer">
+          <button id="identityButton" class="button column1 row1 diag" playerOnSquare="none" used="false"> <img class="tic" src="blank.svg"> </button>
+          <button id="identityButton" class="button column1 row2" playerOnSquare="none" used="false">  <img class="tic" src="blank.svg">  </button>
+          <button id="identityButton" class="button column1 row3 diag" playerOnSquare="none" used="false">  <img class="tic" src="blank.svg">  </button>
+        </div>
+        <div class="identityContainer">
+          <button id="identityButton" class="button column2 row1" playerOnSquare="none" used="false"> <img class="tic" src="blank.svg">  </button>
+          <button id="identityButton" class="button column2 row2 diag" playerOnSquare="none" used="false">  <img class="tic" src="blank.svg">  </button>
+          <button id="identityButton" class="button column2 row3" playerOnSquare="none" used="false">  <img class="tic" src="blank.svg">  </button>
+        </div>
+        <div class="identityContainer">
+          <button id="identityButton" class="button column3 row1 diag" playerOnSquare="none" used="false"> <img class="tic" src="blank.svg">  </button>
+          <button id="identityButton" class="button column3 row2" playerOnSquare="none" used="false">  <img class="tic" src="blank.svg">  </button>
+          <button id="identityButton" class="button column3 row3 diag" playerOnSquare="none" used="false">  <img class="tic" src="blank.svg">  </button>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
