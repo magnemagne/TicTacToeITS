@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const reset = document.getElementById("reset");
   const rewind = document.getElementById("rewind");
-  const winScreen = document.getElementById("WinScreen");
+  const message = document.getElementById("message");
 
   let board = [[0,0,0],[0,0,0],[0,0,0]] ;
   let history = [[0, player],[0, player],[0, player],[0, player],[0, player],[0, player],[0, player],[0, player],[0, player]];
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   var player = new Player("1","1","1","1");
   var player1 = new Player("blue", "rgb(154, 173, 255)", "player1", "o.svg");
   var player2 = new Player("red", "rgb(255, 173, 148) ", "player2", "x.svg");
-  // var player3 = new Player("green", "rgb(255, 173, 148) ", "player2", "x.svg");
+  var player3 = new Player("green", "rgb(255, 173, 148) ", "player2", "x.svg");
   var players = [player1, player2];
 
   let turn = 0;
@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
   reset.addEventListener("click", resetFunction);
 
   rewind.addEventListener("click", () => {
+    
     if (turn > 0) {    
       buttons.forEach(button => {
       button.style.backgroundColor="rgb(213, 202, 202)";
@@ -65,7 +66,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       i = 0;
       function executeTurnAndWait(){
-        executeTurn(history.at(i)[0], history.at(i)[1])
+        message.innerText = "Replaying game";
+        executeTurn(history.at(i)[0], history.at(i)[1], i)
         i++;
         if(i < turn){
           setTimeout(executeTurnAndWait, 2000);
@@ -73,16 +75,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       executeTurnAndWait();
     }
+    setTimeout(() => {
+      message.innerText = "Rewind ended";
+    }, 2000*(turn))
   })
 
-  function executeTurn(coord, playerRewind){
+  function executeTurn(coord, playerRewind, turn){
     buttons.forEach(button => {
       if (button.id == coord){
         button.style.backgroundColor = playerRewind.color;
         button.children[0].setAttribute("src", playerRewind.sign)
+        let actualTurn = turn + 1;
+        message.innerText += " - Turn " + actualTurn + " from " + playerRewind.identification;
       }
     });
-
   }
 
   function resetFunction(){
@@ -94,8 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
       turn = 0;
     })
     gameEnded = false;
+    board = [[0,0,0],[0,0,0],[0,0,0]] ;
     document.body.style.backgroundColor = "#ebe3e3";
-    winScreen.innerText = "";
+    message.innerText = "";
   }
 
   function playerPlay(player){
@@ -103,6 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function checkVictory(player){
+    if(turn == 9){
+      gameEnded = true;
+      gameTied();
+    }
+    
     //check each row vertically and horizontally
     for (let x = 0; x < 3; x++){
       let countRow = 0;
@@ -111,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
           countRow ++;
         }
         if (countRow > 2){
-          gameWon(player)
+          gameWon(player, true)
         }
       }
     }
@@ -122,18 +134,16 @@ document.addEventListener("DOMContentLoaded", () => {
           countRow ++;
         }
         if (countRow > 2){
-          gameWon(player)
+          gameWon(player, true)
         }
       }
     }
     //check diagonally
-    if(board[1][1] == player.identification && board[0][0] == player.identification && board[2][2] == player.identification){
-      gameWon(player);
+    if(board[1][1] == player.identification && (
+      (board[0][0] == player.identification && board[2][2] == player.identification) || 
+       (board[0][2] == player.identification && board[2][0] == player.identification))){
+      gameWon(player, true);
     }
-    if(board[1][1] == player.identification && board[0][2] == player.identification && board[2][0] == player.identification){
-      gameWon(player);
-    }
-
     //check around corners for impossible conditions where the other player cant win
     if(board[0][0] == player.identification && board[1][0] == player.identification && board[0][1] == player.identification 
       && board[0][2] == 0 && board[2][0] == 0
@@ -182,14 +192,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function gameWon(player){
+  function gameWon(player, wonNormally){
     gameEnded = true;
     console.log(player.identification + " won");
-    winScreen.innerText = player.identification + " won!";
+    if (wonNormally)
+    {
+      message.innerText = player.identification + " won!";
+    }
+    else 
+    {
+      message.innerText = player.identification + " will win no matter what the other player does!";
+    }
     document.body.style.backgroundColor = player.backgroundcolor;    
     Array.from(buttons).forEach((button) => {
       button.setAttribute("used","true");
     });
+  }
+
+  function gameTied(){
+    console.log("tie!")
+    message.innerText = "Game ended in a tie!";
+    // document.body.style.backgroundColor =
   }
 
 });
